@@ -127,7 +127,6 @@ static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream)
 #define MZ_DELETE_FILE remove
 
 #else
-#pragma message("Using fopen, ftello, fseeko, stat() etc. path for file I/O - this path may not support large files.")
 #ifndef MINIZ_NO_TIME
 #include <utime.h>
 #endif
@@ -136,9 +135,14 @@ static FILE *mz_freopen(const char *pPath, const char *pMode, FILE *pStream)
 #define MZ_FREAD fread
 #define MZ_FWRITE fwrite
 #ifdef __STRICT_ANSI__
+#include <limits.h>
+#if LONG_MAX < 0x7FFFFFFFFFFFFFFF
+#pragma message("Using fopen, ftell, fseek, stat() etc. for file I/O with file length limited to 32 bits.")
+#endif
 #define MZ_FTELL64 ftell
 #define MZ_FSEEK64 fseek
 #else
+#pragma message("Using fopen, ftello, fseeko, stat() etc. for file I/O - this path may not support large files.")
 #define MZ_FTELL64 ftello
 #define MZ_FSEEK64 fseeko
 #endif
